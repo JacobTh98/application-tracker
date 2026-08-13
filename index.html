@@ -16,9 +16,7 @@
         <header class="hero panel">
             <div>
                 <p class="eyebrow">Bewerbungs-Tracker</p>
-                <h1>Alle Bewerbungen an einem Ort.</h1>
-                <p class="hero-copy">Firmen, Stellenlinks, Gehaltserwartungen und den Status behältst du hier lokal im
-                    Browser im Blick.</p>
+                <h1>Bewerbungen</h1>
             </div>
 
             <div class="hero-stats" id="stats"></div>
@@ -52,7 +50,7 @@
 
                     <label>
                         <span>Gefordertes Einstiegsgehalt</span>
-                        <input id="salary" name="salary" type="number" min="0" step="500" placeholder="50000" required>
+                        <input id="salary" name="salary" type="number" min="0" step="500" placeholder="75000">
                     </label>
 
                     <button class="primary-button" type="submit">Bewerbung speichern</button>
@@ -65,7 +63,7 @@
                         <p class="eyebrow">Übersicht</p>
                         <h2>Deine Bewerbungen</h2>
                     </div>
-                    <p class="panel-note">Grün: offen, Gelb: seit 2 Wochen ohne Update, Rot: abgelehnt.</p>
+                    <button type="button" class="ghost-button" id="export-csv">CSV exportieren</button>
                 </div>
 
                 <div id="application-list" class="cards"></div>
@@ -102,7 +100,7 @@
 
             <label>
                 <span>Gefordertes Einstiegsgehalt</span>
-                <input id="edit-salary" type="number" min="0" step="500" required>
+                <input id="edit-salary" type="number" min="0" step="500">
             </label>
 
             <label>

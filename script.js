@@ -9,6 +9,7 @@ const editDialog = document.getElementById('edit-dialog');
 const editForm = document.getElementById('edit-form');
 const closeDialogButton = document.getElementById('close-dialog');
 const cancelEditButton = document.getElementById('cancel-edit');
+const exportCsvButton = document.getElementById('export-csv');
 
 const addFields = {
     company: document.getElementById('company'),
@@ -43,13 +44,14 @@ render();
 applicationForm.addEventListener('submit', (event) => {
     event.preventDefault();
 
+    const rawSalary = addFields.salary.value.trim();
     const now = new Date().toISOString();
     const application = {
         id: crypto.randomUUID(),
         company: addFields.company.value.trim(),
         jobUrl: addFields.jobUrl.value.trim(),
         location: addFields.location.value.trim(),
-        salary: Number(addFields.salary.value),
+        salary: rawSalary ? Number(rawSalary) : null,
         status: 'offen',
         createdAt: now,
         updatedAt: now,
@@ -66,6 +68,7 @@ editForm.addEventListener('submit', (event) => {
 
     const id = editFields.id.value;
     const index = applications.findIndex((application) => application.id === id);
+    const rawSalary = editFields.salary.value.trim();
 
     if (index === -1) {
         closeDialog();
@@ -76,7 +79,7 @@ editForm.addEventListener('submit', (event) => {
         ...applications[index],
         company: editFields.company.value.trim(),
         jobUrl: editFields.jobUrl.value.trim(),
-        salary: Number(editFields.salary.value),
+        salary: rawSalary ? Number(rawSalary) : null,
         status: editFields.status.value,
         updatedAt: new Date().toISOString(),
     };
@@ -87,6 +90,7 @@ editForm.addEventListener('submit', (event) => {
 
 closeDialogButton.addEventListener('click', closeDialog);
 cancelEditButton.addEventListener('click', closeDialog);
+exportCsvButton.addEventListener('click', exportApplicationsToCsv);
 
 function loadApplications() {
     const rawData = localStorage.getItem(STORAGE_KEY);
@@ -103,17 +107,20 @@ function loadApplications() {
 
         return parsed
             .filter((application) => application && typeof application === 'object')
-            .map((application) => ({
-                id: String(application.id || crypto.randomUUID()),
-                company: String(application.company || ''),
-                jobUrl: String(application.jobUrl || ''),
-                location: String(application.location || ''),
-                salary: Number(application.salary || 0),
-                status: normalizeStatus(application.status),
-                createdAt: application.createdAt || new Date().toISOString(),
-                updatedAt: application.updatedAt || application.createdAt || new Date().toISOString(),
-            }))
-            .filter((application) => application.company && application.jobUrl && application.salary > 0)
+            .map((application) => {
+                const parsedSalary = Number(application.salary);
+                return {
+                    id: String(application.id || crypto.randomUUID()),
+                    company: String(application.company || ''),
+                    jobUrl: String(application.jobUrl || ''),
+                    location: String(application.location || ''),
+                    salary: Number.isFinite(parsedSalary) && parsedSalary > 0 ? parsedSalary : null,
+                    status: normalizeStatus(application.status),
+                    createdAt: application.createdAt || new Date().toISOString(),
+                    updatedAt: application.updatedAt || application.createdAt || new Date().toISOString(),
+                };
+            })
+            .filter((application) => application.company && application.jobUrl)
             .sort((left, right) => new Date(right.createdAt) - new Date(left.createdAt));
     } catch {
         return [];
@@ -123,6 +130,35 @@ function loadApplications() {
 function persistAndRender() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(applications));
     render();
+}
+
+function exportApplicationsToCsv() {
+    const csvRows = [
+        ['Firma', 'Link', 'Ort', 'Gefordertes Einstiegsgehalt', 'Status', 'Erstellt am', 'Zuletzt aktualisiert'],
+        ...applications.map((application) => [
+            application.company,
+            application.jobUrl,
+            application.location || 'Nicht angegeben',
+            application.salary !== null && application.salary > 0 ? String(application.salary) : 'nicht angegeben',
+            application.status,
+            application.createdAt,
+            application.updatedAt,
+        ]),
+    ];
+
+    const csvContent = csvRows
+        .map((row) => row.map((cell) => `"${String(cell ?? '').replaceAll('"', '""')}"`).join(';'))
+        .join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = 'bewerbungen.csv';
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(url);
 }
 
 function render() {
@@ -189,7 +225,7 @@ function renderList() {
                                 </div>
                                 <div class="meta-item">
               <span>Einstiegsgehalt</span>
-              <strong>${euroFormatter.format(application.salary)}</strong>
+              <strong>${application.salary !== null && application.salary > 0 ? euroFormatter.format(application.salary) : 'nicht angegeben'}</strong>
             </div>
             <div class="meta-item">
               <span>Hinzugefügt am</span>
@@ -246,7 +282,7 @@ function openEditDialog(application) {
     editFields.company.value = application.company;
     editFields.jobUrl.value = application.jobUrl;
     editFields.location.value = application.location || '';
-    editFields.salary.value = application.salary;
+    editFields.salary.value = application.salary !== null && application.salary > 0 ? application.salary : '';
     editFields.status.value = application.status;
 
     if (typeof editDialog.showModal === 'function') {
