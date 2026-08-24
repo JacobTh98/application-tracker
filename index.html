@@ -108,9 +108,31 @@
                 <select id="edit-status">
                     <option value="offen">Offen</option>
                     <option value="wartend">Wartend</option>
+                    <option value="bewerbungsgespraech">Bewerbungsgespräch</option>
                     <option value="abgelehnt">Abgelehnt</option>
                 </select>
             </label>
+
+            <fieldset id="interview-fields" class="interview-fields" hidden>
+                <legend>Termin für das Bewerbungsgespräch</legend>
+
+                <div class="interview-grid">
+                    <label>
+                        <span>Datum</span>
+                        <input id="edit-interview-date" type="date">
+                    </label>
+
+                    <label>
+                        <span>Uhrzeit</span>
+                        <input id="edit-interview-time" type="time">
+                    </label>
+                </div>
+
+                <label>
+                    <span>Adresse</span>
+                    <input id="edit-interview-address" type="text" placeholder="Straße, Hausnummer, Ort">
+                </label>
+            </fieldset>
 
             <div class="dialog-actions">
                 <button type="button" class="ghost-button" id="cancel-edit">Abbrechen</button>

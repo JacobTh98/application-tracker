@@ -25,7 +25,11 @@ const editFields = {
     location: document.getElementById('edit-location'),
     salary: document.getElementById('edit-salary'),
     status: document.getElementById('edit-status'),
+    interviewDate: document.getElementById('edit-interview-date'),
+    interviewTime: document.getElementById('edit-interview-time'),
+    interviewAddress: document.getElementById('edit-interview-address'),
 };
+const interviewFields = document.getElementById('interview-fields');
 
 const euroFormatter = new Intl.NumberFormat('de-DE', {
     style: 'currency',
@@ -79,8 +83,12 @@ editForm.addEventListener('submit', (event) => {
         ...applications[index],
         company: editFields.company.value.trim(),
         jobUrl: editFields.jobUrl.value.trim(),
+        location: editFields.location.value.trim(),
         salary: rawSalary ? Number(rawSalary) : null,
         status: editFields.status.value,
+        interviewDate: editFields.status.value === 'bewerbungsgespraech' ? editFields.interviewDate.value : '',
+        interviewTime: editFields.status.value === 'bewerbungsgespraech' ? editFields.interviewTime.value : '',
+        interviewAddress: editFields.status.value === 'bewerbungsgespraech' ? editFields.interviewAddress.value.trim() : '',
         updatedAt: new Date().toISOString(),
     };
 
@@ -91,6 +99,7 @@ editForm.addEventListener('submit', (event) => {
 closeDialogButton.addEventListener('click', closeDialog);
 cancelEditButton.addEventListener('click', closeDialog);
 exportCsvButton.addEventListener('click', exportApplicationsToCsv);
+editFields.status.addEventListener('change', updateInterviewFields);
 
 function loadApplications() {
     const rawData = localStorage.getItem(STORAGE_KEY);
@@ -116,6 +125,9 @@ function loadApplications() {
                     location: String(application.location || ''),
                     salary: Number.isFinite(parsedSalary) && parsedSalary > 0 ? parsedSalary : null,
                     status: normalizeStatus(application.status),
+                    interviewDate: String(application.interviewDate || ''),
+                    interviewTime: String(application.interviewTime || ''),
+                    interviewAddress: String(application.interviewAddress || ''),
                     createdAt: application.createdAt || new Date().toISOString(),
                     updatedAt: application.updatedAt || application.createdAt || new Date().toISOString(),
                 };
@@ -134,13 +146,16 @@ function persistAndRender() {
 
 function exportApplicationsToCsv() {
     const csvRows = [
-        ['Firma', 'Link', 'Ort', 'Gefordertes Einstiegsgehalt', 'Status', 'Erstellt am', 'Zuletzt aktualisiert'],
+        ['Firma', 'Link', 'Ort', 'Gefordertes Einstiegsgehalt', 'Status', 'Gesprächsdatum', 'Gesprächsuhrzeit', 'Gesprächsadresse', 'Erstellt am', 'Zuletzt aktualisiert'],
         ...applications.map((application) => [
             application.company,
             application.jobUrl,
             application.location || 'Nicht angegeben',
             application.salary !== null && application.salary > 0 ? String(application.salary) : 'nicht angegeben',
             application.status,
+            application.interviewDate || '',
+            application.interviewTime || '',
+            application.interviewAddress || '',
             application.createdAt,
             application.updatedAt,
         ]),
@@ -205,12 +220,13 @@ function renderList() {
     listElement.innerHTML = applications
         .map((application) => {
             const trafficLight = getTrafficLight(application);
+            const interviewDetails = renderInterviewDetails(application);
             return `
         <article class="card" style="--tone: ${trafficLight.color};">
           <div class="card-top">
             <div>
               <p class="company-name">${escapeHtml(application.company)}</p>
-              <a class="card-link" href="${escapeAttribute(application.jobUrl)}" target="_blank" rel="noreferrer">Stellenlink öffnen</a>
+              <a class="card-link" href="${escapeAttribute(application.jobUrl)}" target="_blank" rel="noreferrer">Stellenlink</a>
             </div>
             <div class="status-pill" aria-label="Status ${escapeAttribute(trafficLight.label)}">
               <span class="status-dot" aria-hidden="true"></span>
@@ -239,6 +255,7 @@ function renderList() {
               <span>Hinweis</span>
               <strong>${escapeHtml(trafficLight.note)}</strong>
             </div>
+            ${interviewDetails}
           </div>
 
           <div class="card-actions">
@@ -284,6 +301,10 @@ function openEditDialog(application) {
     editFields.location.value = application.location || '';
     editFields.salary.value = application.salary !== null && application.salary > 0 ? application.salary : '';
     editFields.status.value = application.status;
+    editFields.interviewDate.value = application.interviewDate || '';
+    editFields.interviewTime.value = application.interviewTime || '';
+    editFields.interviewAddress.value = application.interviewAddress || '';
+    updateInterviewFields();
 
     if (typeof editDialog.showModal === 'function') {
         editDialog.showModal();
@@ -300,11 +321,46 @@ function closeDialog() {
     }
 }
 
+function updateInterviewFields() {
+    const hasInterview = editFields.status.value === 'bewerbungsgespraech';
+    interviewFields.hidden = !hasInterview;
+    editFields.interviewDate.required = hasInterview;
+    editFields.interviewTime.required = hasInterview;
+    editFields.interviewAddress.required = hasInterview;
+}
+
+function renderInterviewDetails(application) {
+    if (application.status !== 'bewerbungsgespraech') {
+        return '';
+    }
+
+    return `
+      <div class="meta-item interview-meta">
+        <span>Bewerbungsgespräch</span>
+        <strong>${escapeHtml(formatInterviewDate(application.interviewDate))}${application.interviewTime ? ` um ${escapeHtml(application.interviewTime)} Uhr` : ''}</strong>
+        <small>${escapeHtml(application.interviewAddress || 'Adresse nicht angegeben')}</small>
+      </div>
+    `;
+}
+
+function formatInterviewDate(value) {
+    if (!value) {
+        return 'Datum nicht angegeben';
+    }
+
+    const [year, month, day] = value.split('-').map(Number);
+    return dateFormatter.format(new Date(year, month - 1, day));
+}
+
 function formatDate(value) {
     return dateFormatter.format(new Date(value));
 }
 
 function normalizeStatus(status) {
+    if (status === 'bewerbungsgespraech') {
+        return 'bewerbungsgespraech';
+    }
+
     if (status === 'abgelehnt') {
         return 'abgelehnt';
     }
@@ -323,6 +379,15 @@ function getTrafficLight(application) {
             color: 'var(--red)',
             label: 'Abgelehnt',
             note: 'Nicht weiter verfolgen',
+        };
+    }
+
+    if (application.status === 'bewerbungsgespraech') {
+        return {
+            tone: 'interview',
+            color: 'var(--interview)',
+            label: 'Bewerbungsgespräch',
+            note: 'Gespräch vereinbart',
         };
     }
 

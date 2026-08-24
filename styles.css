@@ -11,6 +11,7 @@
     --green: #2d8f5a;
     --yellow: #d39a18;
     --red: #cf4a40;
+    --interview: #3569a8;
     --shadow: 0 22px 60px rgba(66, 40, 16, 0.12);
     --radius: 24px;
     --radius-sm: 16px;
@@ -199,6 +200,30 @@ label span {
     font-weight: 600;
 }
 
+.interview-fields {
+    display: grid;
+    gap: 16px;
+    margin: 0;
+    padding: 16px;
+    border: 1px solid rgba(56, 44, 29, 0.14);
+    border-radius: 16px;
+}
+
+.interview-fields[hidden] {
+    display: none;
+}
+
+.interview-fields legend {
+    padding: 0 6px;
+    font-weight: 700;
+}
+
+.interview-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
 input,
 select {
     width: 100%;
@@ -296,6 +321,17 @@ button:focus-visible {
     color: var(--muted);
     font-size: 0.78rem;
     margin-bottom: 4px;
+}
+
+.interview-meta {
+    grid-column: 1 / -1;
+    border-left: 4px solid var(--interview);
+}
+
+.interview-meta small {
+    display: block;
+    margin-top: 5px;
+    color: var(--muted);
 }
 
 .status-pill {
@@ -409,7 +445,8 @@ button:focus-visible {
     }
 
     .hero-stats,
-    .meta-grid {
+    .meta-grid,
+    .interview-grid {
         grid-template-columns: 1fr;
     }
 
