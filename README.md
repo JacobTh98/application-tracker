@@ -1,15 +1,18 @@
-# Application tracker
+# Application Tracker
 
-Kleine Browser-Oberfläche zum Verwalten von Bewerbungen.
+A small, dependency-free browser app for tracking job applications.
 
-## Funktionen
+## Install
 
-- Bewerbung mit Firmenname, Stellenlink und gewünschtem Einstiegsgehalt anlegen
-- aktuelles Datum wird beim Anlegen automatisch gespeichert
-- Einträge direkt bearbeiten oder löschen
-- Statusanzeige mit Ampel: grün für offen oder 2 Wochen ohne Update, rot für abgelehnt
-- Neue Bewerbungen werden automatisch mit Status "offen" gespeichert
+No installation or build step is required. Clone or download the repository and open [`index.html`](./index.html) in a modern browser.
 
-## Nutzung
+## Use
 
-Öffne `index.html` im Browser. Die Daten werden lokal im Browser gespeichert.
+1. Enter the company, job listing URL, location, and optional starting salary.
+2. Select **Save application**.
+3. Use **Edit** to update details or status, and **Delete** to remove an entry.
+4. Select **Export CSV** to download all applications.
+
+## How it works
+
+The app is built with plain HTML, CSS, and JavaScript. Applications are stored in the browser's `localStorage`, so no server or account is needed. New entries start with **Open** status. Entries without an update for 14 days are marked as waiting, while rejected applications are shown in red and scheduled interviews include their date, time, and address.

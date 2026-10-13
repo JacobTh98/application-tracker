@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bewerbungs-Tracker</title>
+    <title>Application Tracker</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -15,8 +15,8 @@
     <main class="app-shell">
         <header class="hero panel">
             <div>
-                <p class="eyebrow">Bewerbungs-Tracker</p>
-                <h1>Bewerbungen</h1>
+                <p class="eyebrow">Application Tracker</p>
+                <h1>Applications</h1>
             </div>
 
             <div class="hero-stats" id="stats"></div>
@@ -26,44 +26,44 @@
             <section class="panel form-panel">
                 <div class="panel-heading">
                     <div>
-                        <p class="eyebrow">Neue Bewerbung</p>
-                        <h2>Eintrag hinzufügen</h2>
+                        <p class="eyebrow">New application</p>
+                        <h2>Add an entry</h2>
                     </div>
-                    <p class="panel-note">Das aktuelle Datum wird automatisch gesetzt.</p>
+                    <p class="panel-note">Today’s date is added automatically.</p>
                 </div>
 
                 <form id="application-form" class="form-grid" autocomplete="off">
                     <label>
-                        <span>Name der Firma</span>
-                        <input id="company" name="company" type="text" placeholder="Zum Beispiel: Acme GmbH" required>
+                        <span>Company name</span>
+                        <input id="company" name="company" type="text" placeholder="For example: Acme Inc." required>
                     </label>
 
                     <label>
-                        <span>Link zur Stelle</span>
+                        <span>Job listing URL</span>
                         <input id="jobUrl" name="jobUrl" type="url" placeholder="https://..." required>
                     </label>
 
                     <label>
-                        <span>Ort</span>
-                        <input id="location" name="location" type="text" placeholder="Zum Beispiel: Berlin" required>
+                        <span>Location</span>
+                        <input id="location" name="location" type="text" placeholder="For example: Berlin" required>
                     </label>
 
                     <label>
-                        <span>Gefordertes Einstiegsgehalt</span>
+                        <span>Expected starting salary</span>
                         <input id="salary" name="salary" type="number" min="0" step="500" placeholder="75000">
                     </label>
 
-                    <button class="primary-button" type="submit">Bewerbung speichern</button>
+                    <button class="primary-button" type="submit">Save application</button>
                 </form>
             </section>
 
             <section class="panel list-panel">
                 <div class="panel-heading">
                     <div>
-                        <p class="eyebrow">Übersicht</p>
-                        <h2>Deine Bewerbungen</h2>
+                        <p class="eyebrow">Overview</p>
+                        <h2>Your applications</h2>
                     </div>
-                    <button type="button" class="ghost-button" id="export-csv">CSV exportieren</button>
+                    <button type="button" class="ghost-button" id="export-csv">Export CSV</button>
                 </div>
 
                 <div id="application-list" class="cards"></div>
@@ -75,46 +75,46 @@
         <form id="edit-form" class="dialog-form">
             <div class="panel-heading dialog-heading">
                 <div>
-                    <p class="eyebrow">Eintrag bearbeiten</p>
-                    <h2 id="dialog-title">Bewerbung bearbeiten</h2>
+                    <p class="eyebrow">Edit entry</p>
+                    <h2 id="dialog-title">Edit application</h2>
                 </div>
-                <button type="button" class="ghost-button" id="close-dialog">Schließen</button>
+                <button type="button" class="ghost-button" id="close-dialog">Close</button>
             </div>
 
             <input type="hidden" id="edit-id">
 
             <label>
-                <span>Name der Firma</span>
+                <span>Company name</span>
                 <input id="edit-company" type="text" required>
             </label>
 
             <label>
-                <span>Link zur Stelle</span>
+                <span>Job listing URL</span>
                 <input id="edit-jobUrl" type="url" required>
             </label>
 
             <label>
-                <span>Ort</span>
+                <span>Location</span>
                 <input id="edit-location" type="text" required>
             </label>
 
             <label>
-                <span>Gefordertes Einstiegsgehalt</span>
+                <span>Expected starting salary</span>
                 <input id="edit-salary" type="number" min="0" step="500">
             </label>
 
             <label>
                 <span>Status</span>
                 <select id="edit-status">
-                    <option value="offen">Offen</option>
-                    <option value="wartend">Wartend</option>
-                    <option value="bewerbungsgespraech">Bewerbungsgespräch</option>
-                    <option value="abgelehnt">Abgelehnt</option>
+                    <option value="open">Open</option>
+                    <option value="waiting">Waiting</option>
+                    <option value="interview">Interview</option>
+                    <option value="rejected">Rejected</option>
                 </select>
             </label>
 
             <fieldset id="interview-fields" class="interview-fields" hidden>
-                <legend>Termin für das Bewerbungsgespräch</legend>
+                <legend>Interview appointment</legend>
 
                 <div class="interview-grid">
                     <label>
@@ -129,14 +129,14 @@
                 </div>
 
                 <label>
-                    <span>Adresse</span>
-                    <input id="edit-interview-address" type="text" placeholder="Straße, Hausnummer, Ort">
+                    <span>Address</span>
+                    <input id="edit-interview-address" type="text" placeholder="Street, number, city">
                 </label>
             </fieldset>
 
             <div class="dialog-actions">
-                <button type="button" class="ghost-button" id="cancel-edit">Abbrechen</button>
-                <button type="submit" class="primary-button">Änderungen speichern</button>
+                <button type="button" class="ghost-button" id="cancel-edit">Cancel</button>
+                <button type="submit" class="primary-button">Save changes</button>
             </div>
         </form>
     </dialog>

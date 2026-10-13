@@ -31,13 +31,13 @@ const editFields = {
 };
 const interviewFields = document.getElementById('interview-fields');
 
-const euroFormatter = new Intl.NumberFormat('de-DE', {
+const euroFormatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'EUR',
     maximumFractionDigits: 0,
 });
 
-const dateFormatter = new Intl.DateTimeFormat('de-DE', {
+const dateFormatter = new Intl.DateTimeFormat('en-US', {
     dateStyle: 'medium',
 });
 
@@ -56,7 +56,7 @@ applicationForm.addEventListener('submit', (event) => {
         jobUrl: addFields.jobUrl.value.trim(),
         location: addFields.location.value.trim(),
         salary: rawSalary ? Number(rawSalary) : null,
-        status: 'offen',
+        status: 'open',
         createdAt: now,
         updatedAt: now,
     };
@@ -86,9 +86,9 @@ editForm.addEventListener('submit', (event) => {
         location: editFields.location.value.trim(),
         salary: rawSalary ? Number(rawSalary) : null,
         status: editFields.status.value,
-        interviewDate: editFields.status.value === 'bewerbungsgespraech' ? editFields.interviewDate.value : '',
-        interviewTime: editFields.status.value === 'bewerbungsgespraech' ? editFields.interviewTime.value : '',
-        interviewAddress: editFields.status.value === 'bewerbungsgespraech' ? editFields.interviewAddress.value.trim() : '',
+        interviewDate: editFields.status.value === 'interview' ? editFields.interviewDate.value : '',
+        interviewTime: editFields.status.value === 'interview' ? editFields.interviewTime.value : '',
+        interviewAddress: editFields.status.value === 'interview' ? editFields.interviewAddress.value.trim() : '',
         updatedAt: new Date().toISOString(),
     };
 
@@ -146,12 +146,12 @@ function persistAndRender() {
 
 function exportApplicationsToCsv() {
     const csvRows = [
-        ['Firma', 'Link', 'Ort', 'Gefordertes Einstiegsgehalt', 'Status', 'Gesprächsdatum', 'Gesprächsuhrzeit', 'Gesprächsadresse', 'Erstellt am', 'Zuletzt aktualisiert'],
+        ['Company', 'Job URL', 'Location', 'Expected starting salary', 'Status', 'Interview date', 'Interview time', 'Interview address', 'Created at', 'Last updated'],
         ...applications.map((application) => [
             application.company,
             application.jobUrl,
-            application.location || 'Nicht angegeben',
-            application.salary !== null && application.salary > 0 ? String(application.salary) : 'nicht angegeben',
+            application.location || 'Not provided',
+            application.salary !== null && application.salary > 0 ? String(application.salary) : 'not provided',
             application.status,
             application.interviewDate || '',
             application.interviewTime || '',
@@ -184,24 +184,24 @@ function render() {
 function renderStats() {
     const openCount = applications.filter((application) => getTrafficLight(application).tone === 'green').length;
     const staleCount = applications.filter((application) => getTrafficLight(application).tone === 'yellow').length;
-    const rejectedCount = applications.filter((application) => application.status === 'abgelehnt').length;
+    const rejectedCount = applications.filter((application) => application.status === 'rejected').length;
     const totalCount = applications.length;
 
     statsElement.innerHTML = `
     <article class="metric">
-      <span class="metric-label">Gesamt</span>
+      <span class="metric-label">Total</span>
       <span class="metric-value">${totalCount}</span>
     </article>
     <article class="metric">
-      <span class="metric-label">Offen</span>
+      <span class="metric-label">Open</span>
       <span class="metric-value">${openCount}</span>
     </article>
     <article class="metric">
-      <span class="metric-label">Gelb</span>
+      <span class="metric-label">Waiting</span>
       <span class="metric-value">${staleCount}</span>
     </article>
     <article class="metric">
-      <span class="metric-label">Abgelehnt</span>
+      <span class="metric-label">Rejected</span>
       <span class="metric-value">${rejectedCount}</span>
     </article>
   `;
@@ -211,7 +211,7 @@ function renderList() {
     if (!applications.length) {
         listElement.innerHTML = `
       <div class="empty-state">
-        Noch keine Bewerbungen vorhanden. Füge oben den ersten Eintrag hinzu, dann erscheint er direkt in der Übersicht.
+        No applications yet. Add your first entry above to see it here.
       </div>
     `;
         return;
@@ -226,7 +226,7 @@ function renderList() {
           <div class="card-top">
             <div>
               <p class="company-name">${escapeHtml(application.company)}</p>
-              <a class="card-link" href="${escapeAttribute(application.jobUrl)}" target="_blank" rel="noreferrer">Stellenlink</a>
+              <a class="card-link" href="${escapeAttribute(application.jobUrl)}" target="_blank" rel="noreferrer">Job listing</a>
             </div>
             <div class="status-pill" aria-label="Status ${escapeAttribute(trafficLight.label)}">
               <span class="status-dot" aria-hidden="true"></span>
@@ -236,31 +236,31 @@ function renderList() {
 
           <div class="meta-grid">
             <div class="meta-item">
-                                    <span>Ort</span>
-                                    <strong>${escapeHtml(application.location || 'Nicht angegeben')}</strong>
+                                    <span>Location</span>
+                                    <strong>${escapeHtml(application.location || 'Not provided')}</strong>
                                 </div>
                                 <div class="meta-item">
-              <span>Einstiegsgehalt</span>
-              <strong>${application.salary !== null && application.salary > 0 ? euroFormatter.format(application.salary) : 'nicht angegeben'}</strong>
+              <span>Starting salary</span>
+              <strong>${application.salary !== null && application.salary > 0 ? euroFormatter.format(application.salary) : 'not provided'}</strong>
             </div>
             <div class="meta-item">
-              <span>Hinzugefügt am</span>
+              <span>Added on</span>
               <strong>${formatDate(application.createdAt)}</strong>
             </div>
             <div class="meta-item">
-              <span>Zuletzt aktualisiert</span>
+              <span>Last updated</span>
               <strong>${formatDate(application.updatedAt)}</strong>
             </div>
             <div class="meta-item">
-              <span>Hinweis</span>
+              <span>Note</span>
               <strong>${escapeHtml(trafficLight.note)}</strong>
             </div>
             ${interviewDetails}
           </div>
 
           <div class="card-actions">
-            <button type="button" class="ghost-button" data-action="edit" data-id="${escapeAttribute(application.id)}">Bearbeiten</button>
-            <button type="button" class="ghost-button" data-action="delete" data-id="${escapeAttribute(application.id)}">Löschen</button>
+            <button type="button" class="ghost-button" data-action="edit" data-id="${escapeAttribute(application.id)}">Edit</button>
+            <button type="button" class="ghost-button" data-action="delete" data-id="${escapeAttribute(application.id)}">Delete</button>
           </div>
         </article>
       `;
@@ -283,7 +283,7 @@ function renderList() {
                 return;
             }
 
-            const confirmed = window.confirm(`Bewerbung bei ${application.company} wirklich löschen?`);
+            const confirmed = window.confirm(`Delete the application at ${application.company}?`);
             if (!confirmed) {
                 return;
             }
@@ -322,7 +322,7 @@ function closeDialog() {
 }
 
 function updateInterviewFields() {
-    const hasInterview = editFields.status.value === 'bewerbungsgespraech';
+    const hasInterview = editFields.status.value === 'interview';
     interviewFields.hidden = !hasInterview;
     editFields.interviewDate.required = hasInterview;
     editFields.interviewTime.required = hasInterview;
@@ -330,22 +330,22 @@ function updateInterviewFields() {
 }
 
 function renderInterviewDetails(application) {
-    if (application.status !== 'bewerbungsgespraech') {
+    if (application.status !== 'interview') {
         return '';
     }
 
     return `
       <div class="meta-item interview-meta">
-        <span>Bewerbungsgespräch</span>
-        <strong>${escapeHtml(formatInterviewDate(application.interviewDate))}${application.interviewTime ? ` um ${escapeHtml(application.interviewTime)} Uhr` : ''}</strong>
-        <small>${escapeHtml(application.interviewAddress || 'Adresse nicht angegeben')}</small>
+        <span>Interview</span>
+        <strong>${escapeHtml(formatInterviewDate(application.interviewDate))}${application.interviewTime ? ` at ${escapeHtml(application.interviewTime)}` : ''}</strong>
+        <small>${escapeHtml(application.interviewAddress || 'Address not provided')}</small>
       </div>
     `;
 }
 
 function formatInterviewDate(value) {
     if (!value) {
-        return 'Datum nicht angegeben';
+        return 'Date not provided';
     }
 
     const [year, month, day] = value.split('-').map(Number);
@@ -357,37 +357,37 @@ function formatDate(value) {
 }
 
 function normalizeStatus(status) {
-    if (status === 'bewerbungsgespraech') {
-        return 'bewerbungsgespraech';
+    if (status === 'bewerbungsgespraech' || status === 'interview') {
+        return 'interview';
     }
 
-    if (status === 'abgelehnt') {
-        return 'abgelehnt';
+    if (status === 'abgelehnt' || status === 'rejected') {
+        return 'rejected';
     }
 
-    if (status === 'wartend') {
-        return 'wartend';
+    if (status === 'wartend' || status === 'waiting') {
+        return 'waiting';
     }
 
-    return 'offen';
+    return 'open';
 }
 
 function getTrafficLight(application) {
-    if (application.status === 'abgelehnt') {
+    if (application.status === 'rejected') {
         return {
             tone: 'red',
             color: 'var(--red)',
-            label: 'Abgelehnt',
-            note: 'Nicht weiter verfolgen',
+            label: 'Rejected',
+            note: 'Do not pursue further',
         };
     }
 
-    if (application.status === 'bewerbungsgespraech') {
+    if (application.status === 'interview') {
         return {
             tone: 'interview',
             color: 'var(--interview)',
-            label: 'Bewerbungsgespräch',
-            note: 'Gespräch vereinbart',
+            label: 'Interview',
+            note: 'Interview scheduled',
         };
     }
 
@@ -396,16 +396,16 @@ function getTrafficLight(application) {
         return {
             tone: 'yellow',
             color: 'var(--yellow)',
-            label: 'Wartet zu lange',
-            note: `${Math.floor(daysWithoutActivity)} Tage ohne Update`,
+            label: 'Waiting too long',
+            note: `${Math.floor(daysWithoutActivity)} days without an update`,
         };
     }
 
     return {
         tone: 'green',
         color: 'var(--green)',
-        label: application.status === 'wartend' ? 'Wartend' : 'Offen',
-        note: 'Aktuell in Bearbeitung',
+        label: application.status === 'waiting' ? 'Waiting' : 'Open',
+        note: 'Currently in progress',
     };
 }
 
